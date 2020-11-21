@@ -2,47 +2,118 @@
 <html>
 
 <head>
-
+    <style>
+        @import url("https://fonts.googleapis.com/css?family=Montserrat&display=swap");
+    
+    @import url("https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css");
+    
+    body {
+        font-family: "Montserrat", sans-serif;
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+    }
+    
+    * {
+        font-family: "Montserrat", sans-serif !important;
+    }
+    body {
+        background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+        background-size: 100% 100%;
+        -webkit-animation: gradient 15s ease infinite;
+                animation: gradient 15s ease infinite;
+    }
+    
+    @-webkit-keyframes gradient {
+        0% {
+            background-position: 0% 50%;
+        }
+        50% {
+            background-position: 100% 50%;
+        }
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+    
+    @keyframes gradient {
+        0% {
+            background-position: 0% 50%;
+        }
+        50% {
+            background-position: 100% 50%;
+        }
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+    h1{
+              font-size: 4rem;
+            text-align: center;
+          height:90vh;
+          line-height: 90vh;
+            color: #fcedd8;
+               font-family: 'Niconne', cursive;
+            font-weight: 700;
+          text-shadow: 5px 5px 0px #eb452b, 
+                      10px 10px 0px #efa032, 
+                      15px 15px 0px #46b59b, 
+                      20px 20px 0px #017e7f, 
+                      25px 25px 0px #052939, 
+                      30px 30px 0px #ad0202 
+                      
+                     
+                      
+    }
+    
+    
+    
+        </style>
 </head>
 
 <body>
-    <div id="start"> 
+    <h1>Color ɯʇ∀ </h1>
+    <p id="date-time"></p>
+    <div id="start"> <!--Displays the buttons for account creation-->
         <label>Input your pin:</label>
         <input id="pinput"></input>
         <button onclick="login()">Submit</button>
         <p id="account"></p>
 
-        <label>New account:</label>
+        <label>New account:</label> <!--Displays new acoount button-->
         <input id="newpinput"></input>
         <button onclick="newAccount()">Submit</button>
     </div>
 
-    <div id="menu" style="display:none"> 
+    <div id="menu" style="display:none"> <!-- After account creation user can view balance and can deposit or withdraw money as well as change their pin-->
         <button onclick="displayBalance()">Get Balance</button>
         <p id="balance"></p>
 
         <button onclick="displayWithrawal()">Withdrawal</button>
 
         <button onclick="displayDeposit()">Deposit</button>
-       
+
+        <button onclick="displayChangePin()">Change Pin</button>
+
         <button onclick="returnToMenu()">Logout</button>
+
     </div>
 
     <script>
-        /* When the page loads get the ATM accounts out of local storage */ 
-        let atm = new Atm(); 
-        atm.accounts = JSON.parse(localStorage.getItem("atm_accts")); 
-        /* if there are no accounts, make sure we initialize with an empty array */
-        if(atm.accounts === null){
-            atm.accounts = []; 
-        }
+        
+        let dt = Date(); //creates date and displays it on the webpage
+        document.getElementById("date-time").innerHTML = dt.toString(); 
 
         /*----------- the code to manipute data/ logic goes here --------*/ 
-        function Atm() {
-            this.accounts = [];
-            this.currentAccount = null; 
-        
-            this.createAccount = function (pin){
+        class Atm {//creates empty array for accounts
+            constructor(){ 
+                this.accounts = [];
+                
+                this.currentAccount = null; 
+            }
+            createAccount(pin){ //creates a new account
                     let newAccount = new Account(pin);
                     this.accounts.push(newAccount);
                     this.currentAccount = newAccount; 
@@ -50,7 +121,21 @@
                     return newAccount; 
             };
 
-            this.getAccount = function (pin){
+            updateAccount(newPin){ 
+               // let arrAccount = atm.getAccount(atm.currentAccount.pin);
+                 //   atm.accounts[currentAcct.index].pin = pin;  
+                for (let i = 0; i < this.accounts.length; i++) {
+                    if (this.accounts[i].pin === this.currentAccount.pin) {
+                        //return the bank account that matches our pin
+                        this.currentAccount.changePin(newPin); 
+                        this.accounts[i] = this.currentAccount; 
+                        updateATM(); 
+  
+                    }
+                }
+            }
+
+            getAccount(pin){ //retrieves any bank account that matches the pin entered
                 for (let i = 0; i < this.accounts.length; i++) {
                     if (this.accounts[i].pin === pin) {
                         //return the bank account that matches our pin
@@ -63,25 +148,45 @@
             }; 
         }
 
-        function Account(pin) { 
-            this.pin = pin;
-            this.balance = 0;
+        class Account { //stores pin and creates balance for account
+            constructor (pin) {
+                //let this = {};
+                this.pin = pin;
+                this.balance = 0;
+                //return this; 
+            }
 
-            //withdrawal
-            this.withdrawal = function(wdAmount){
+            //allows users to withdrawal from their account
+            withdrawal(wdAmount){ 
                 this.balance = this.balance - wdAmount; 
                 updateATM(); 
             }
 
-            //deposit 
-            this.deposit = function(depAmount){
+            //allows users to deposit to their account
+            deposit(depAmount){
                 this.balance = this.balance + depAmount;
+                updateATM(); 
+            }
+
+            //allows user to change pin
+            changePin(newPin){
+                this.pin = newPin; 
+
                 updateATM(); 
             }
 
         }
 
-        function updateATM(){ 
+        /* When the page loads get the ATM accounts out of local storage */ 
+        let atm = new Atm(); 
+        atm.accounts = JSON.parse(localStorage.getItem("atm_accts")); 
+        /* if there are no accounts, make sure we initialize with an empty array */
+        if(atm.accounts === null){
+            atm.accounts = []; 
+        }
+
+        function updateATM(){ //stores any created accounts
+            console.log(atm.accounts); 
             localStorage.setItem("atm_accts",  JSON.stringify(atm.accounts) ); 
         }
 
@@ -93,48 +198,87 @@
             /* clear the fields in the menu */ 
             document.getElementById("balance").innerHTML = null;
 
-            /* clear current account */ 
-            atm.currentAccount = null; 
-
             /* hide the menu and display the login */ 
             document.getElementById("menu").style.display = "none";
             document.getElementById("start").style.display = "block";
+
+            /*clear the current account */
+            atm.currentAccount = null; 
             
         }
 
-        function displayBalance() { 
+        function displayBalance() { //displays balance
             document.getElementById("balance").innerHTML = 
             atm.currentAccount.balance; 
         }
 
-        function displayWithrawal() {
-            let amount = Number(prompt("How much would you like to withdrawal?", ""));
-            atm.currentAccount.withdrawal(amount); 
-            displayBalance(); 
+        function displayWithrawal() { //displays withdraw button and prompts user when clicked
+            if(confirm("We charge a 2.50$ fee for withdrawals.")){
+                let amount = Number(prompt("How much would you like to withdrawal?", ""));
+                if(amountValid("w", amount)){
+                    atm.currentAccount.withdrawal(amount); 
+                    //display the balance
+                    displayBalance(); 
+                }
+                else {
+                    alert("Amount must be <= $200 and in increments of $20.")
+                }
+            }
         }
         
-        function displayDeposit() {
+        function displayDeposit() { //displays deposit and when click prompts user
+            if(confirm("We charge a 50¢ fee for deposits")){
+
             let amount = Number(prompt("How much would you like to deposit?", ""));
-            atm.currentAccount.deposit(amount); 
-            displayBalance(); 
+            if(amountValid("d", amount)){
+                atm.currentAccount.deposit(amount); 
+                displayBalance(); 
+            }
+            else {
+                alert("Amount must be <= $200 and in increments of $20.")
+            }
         }
+    }
         
-        function newAccount(){
-                let pin = parseInt(document.getElementById("newpinput").value);
-                if(atm.getAccount(pin) != null){
-                    alert("This account exists!"); 
-                } else {
-                    atm.createAccount(pin);
-                    displayMenu(); 
-                } 
+        function amountValid(type, amount){ //determines whether the number input is <= to 200, in increments of 20 and, are numbers 
+            let val = true; 
+            if(amount > 200){
+                val = false; 
+            }
+            if(amount % 20 != 0){
+                val = false; 
+            }
+            if(type === "w" ){
+                if(amount > atm.currentAccount.balance){
+                    val = false; 
+                }
             }
 
-        function login() {
+            return(val); 
+        }
+
+        function newAccount(){ //creates new account and only allows for numbers to be inputted
+                let pin = parseInt(document.getElementById("newpinput").value);
+                if(pin <= 9999 && pin >= 1000){
+                    if(atm.getAccount(pin) != null){
+                        alert("This account exists!"); 
+                    } else {
+                        atm.createAccount(pin);
+                        displayMenu(); 
+                    } 
+                } 
+                else {
+                    alert("Your pin needs to be 4 numbers."); 
+                }
+            }
+
+        function login() { //determines if pin is valid or not
             let pin = parseInt(document.getElementById("pinput").value);
-            atm.getAccount(pin);
-            if( atm.currentAccount === null){
+            let acct = atm.getAccount(pin);
+            if( acct === null){
                 alert("Invalid pin!"); 
             } else {
+                atm.currentAccount = acct; 
                 displayMenu(); 
             }
         }
@@ -143,12 +287,26 @@
            
             /* clear the fields in the menu */ 
             document.getElementById("pinput").value = null; 
-            document.getElementById("newpinput").value = null;; 
+            document.getElementById("newpinput").value = null;
 
             /* hide the login and display the menu */ 
             document.getElementById("start").style.display = "none";
             document.getElementById("menu").style.display = "block";
         }
+
+        function displayChangePin(){ //displays changepin button and prompts user when clciked
+            //we're going to have to update a pin on a specific account with a new pin
+            //1. get the new pin
+            let pin = Number(prompt("Please enter your new pin.", ""));
+            //2. see if pin exists already //call our atm.getAccount(pin)
+            if(atm.getAccount(pin) === null){
+                    //change our pin in the current account 
+                    atm.updateAccount(pin); 
+                } else {
+                    alert("This account exists, please choose another pin!"); 
+                } 
+        }
+
     </script>
 
 </body>
